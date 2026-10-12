@@ -1,0 +1,22 @@
+import { Download, Plus, Search, SlidersHorizontal, Upload, UserPlus, UsersRound } from 'lucide-react'
+import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { PageHeader } from '../components/ui/PageHeader'
+import { Button } from '../components/ui/Button'
+import { Card } from '../components/ui/Card'
+import { Badge } from '../components/ui/Badge'
+import { Modal } from '../components/ui/Modal'
+import { EmptyState } from '../components/ui/EmptyState'
+import { employees } from '../data/mockData'
+import { getInitials } from '../lib/utils'
+
+export function Employees() {
+  const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const [query, setQuery] = useState('')
+  const [department, setDepartment] = useState('All')
+  const [status, setStatus] = useState('All')
+  const [open, setOpen] = useState(params.get('create') === '1')
+  const filtered = useMemo(() => employees.filter(e => (query ? `${e.name} ${e.email} ${e.role}`.toLowerCase().includes(query.toLowerCase()) : true) && (department === 'All' || e.department === department) && (status === 'All' || e.status === status)), [query, department, status])
+  return <div className="page-stack"><PageHeader eyebrow="PEOPLE" title="Employees" description="Manage your people, teams and employee information." actions={<><Button variant="secondary" icon={<Upload size={16} />}>Import</Button><Button variant="secondary" icon={<Download size={16} />}>Export</Button><Button icon={<Plus size={16} />} onClick={() => setOpen(true)}>Add employee</Button></>} /><Card><div className="toolbar"><div className="search-field"><Search size={17} /><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search employees…" /></div><select value={department} onChange={e => setDepartment(e.target.value)}><option>All</option><option>Engineering</option><option>Design</option><option>Sales</option><option>Operations</option></select><select value={status} onChange={e => setStatus(e.target.value)}><option>All</option><option>Active</option><option>Inactive</option></select><button className="filter-button"><SlidersHorizontal size={16} /> Filters</button></div>{filtered.length ? <div className="table-wrap"><table className="data-table"><thead><tr><th>Employee</th><th>Department</th><th>Role</th><th>Manager</th><th>Status</th><th>Joined</th><th /></tr></thead><tbody>{filtered.map(e => <tr key={e.id} onClick={() => navigate(`/app/employees/${e.id}`)}><td><div className="person-cell"><span className="avatar avatar-md">{getInitials(e.name)}</span><div><strong>{e.name}</strong><span>{e.email}</span></div></div></td><td>{e.department}</td><td>{e.role}</td><td>{e.manager}</td><td><Badge tone={e.status === 'Active' ? 'green' : 'gray'} dot>{e.status}</Badge></td><td>{e.joined}</td><td><button className="row-menu" onClick={(ev) => ev.stopPropagation()}>•••</button></td></tr>)}</tbody></table></div> : <EmptyState icon={<UsersRound size={23} />} title="No employees found" description="Try another filter or add your first employee." action={<Button onClick={() => setOpen(true)}>Add employee</Button>} />}</Card><Modal open={open} onClose={() => setOpen(false)} title="Add employee" description="Create a new employee record and invite them to the workspace." size="lg"><form className="form-stack" onSubmit={e => { e.preventDefault(); setOpen(false) }}><div className="two-col"><label>First name<input required placeholder="Sarah" /></label><label>Last name<input required placeholder="Ahmed" /></label></div><div className="two-col"><label>Work email<input type="email" required placeholder="name@company.com" /></label><label>Phone<input placeholder="+971 50 000 0000" /></label></div><div className="two-col"><label>Job title<input placeholder="Senior Designer" /></label><label>Department<select defaultValue="Engineering"><option>Engineering</option><option>Design</option><option>Sales</option><option>Operations</option></select></label></div><div className="two-col"><label>Manager<input placeholder="Nibras" /></label><label>Employment type<select defaultValue="Full-time"><option>Full-time</option><option>Part-time</option><option>Contractor</option></select></label></div><label>Joining date<input type="date" defaultValue="2026-09-19" /></label><div className="modal-footer"><Button variant="secondary" type="button" onClick={() => setOpen(false)}>Cancel</Button><Button type="submit" icon={<UserPlus size={16} />}>Create employee</Button></div></form></Modal></div>
+}

@@ -1,0 +1,17 @@
+import { Download, FileArchive, FileCheck2, FileText, FolderOpen, MoreHorizontal, Plus, Search, Upload } from 'lucide-react'
+import { useSearchParams } from 'react-router-dom'
+import { useState } from 'react'
+import { PageHeader } from '../components/ui/PageHeader'
+import { Button } from '../components/ui/Button'
+import { Card } from '../components/ui/Card'
+import { Badge } from '../components/ui/Badge'
+import { Modal } from '../components/ui/Modal'
+import { documents } from '../data/mockData'
+
+const iconMap = { Policy: FileCheck2, Contract: FileText, Template: FileArchive }
+
+export function Documents() {
+  const [params] = useSearchParams()
+  const [open, setOpen] = useState(params.get('upload') === '1')
+  return <div className="page-stack"><PageHeader eyebrow="RESOURCES" title="Documents" description="Keep policies, contracts, certificates and files organized." actions={<><Button variant="secondary" icon={<Download size={16} />}>Export index</Button><Button icon={<Upload size={16} />} onClick={() => setOpen(true)}>Upload document</Button></>} /><div className="resource-top-grid"><Card className="resource-highlight"><div className="resource-highlight-icon"><FolderOpen size={20} /></div><div><strong>Document workspace</strong><span>Private files are access-controlled by role and organization.</span></div></Card><Card><div className="mini-stat"><span>Company documents</span><strong>42</strong></div><div className="mini-stat"><span>Employee files</span><strong>186</strong></div><div className="mini-stat"><span>Expiring soon</span><strong className="text-amber">7</strong></div></Card></div><Card><div className="toolbar"><div className="search-field"><Search size={17} /><input placeholder="Search documents…" /></div><select><option>All categories</option><option>Policy</option><option>Contract</option><option>Template</option></select><select><option>All visibility</option><option>Company</option><option>Private</option></select></div><div className="document-list">{documents.map(doc => { const Icon = iconMap[doc.category as keyof typeof iconMap] ?? FileText; return <div className="document-row" key={doc.id}><div className="document-icon"><Icon size={20} /></div><div className="document-main"><strong>{doc.name}</strong><span>{doc.category} · {doc.visibility} · updated {doc.updated}</span></div><Badge tone="gray">{doc.version}</Badge><button className="icon-button"><MoreHorizontal size={17} /></button></div> })}</div></Card><Modal open={open} onClose={() => setOpen(false)} title="Upload document" description="Add a file to the workspace." size="md"><form className="form-stack" onSubmit={e => { e.preventDefault(); setOpen(false) }}><div className="upload-zone"><Upload size={24} /><strong>Drop a file here</strong><span>or choose a file from your computer</span><button type="button" className="text-button">Choose file</button></div><div className="two-col"><label>Category<select defaultValue="Policy"><option>Policy</option><option>Contract</option><option>Certificate</option><option>Template</option></select></label><label>Visibility<select defaultValue="Company"><option>Company</option><option>Private</option></select></label></div><label>Description<textarea rows={3} placeholder="Optional note…" /></label><div className="modal-footer"><Button variant="secondary" type="button" onClick={() => setOpen(false)}>Cancel</Button><Button type="submit">Upload document</Button></div></form></Modal></div>
+}
